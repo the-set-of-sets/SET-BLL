@@ -1,10 +1,27 @@
 // bilder.asy
 // Sara Fish, 26.09-27.09 
-// (in Prag during my Studienfahrt, written in one internet cafe that smelled of smoke and one McDonalds in a mall)
+// (wa Twiy knnwso ef Ggyiqwuywvwb, oywgxjv au hjs nvllfaiy ksmx pvfb ktsypjl gm licpm sur brj UuKhjoqlk pb n qftd)
 
-// Bedienungsanleitung:
-// drawCard(pair coords, int anzahl_index, int form_index, int fuellung_index, int farbe_index, real scaleFactor=1)
-// self explanitory. the int ranges from 1 to 3, the Festlegung is in the table below.
+/*
+-----------------------
+ Bedienungsanleitung fuer drawCard
+-----------------------
+drawCard(pair coords, int anzahl_index, int form_index, int fuellung_index, int farbe_index, real scaleFactor=1,bool includeLabel=false)
+
+coords: Ein (x,y) Paar. Gibt an, an welcher Stelle im Bild die Karte gezeichnet werden soll.
+anzahl_index, form_index, fuellung_index, farbe_index: Jeweils 1, 2 oder 3. Gibt die Auspraegung des jeweiligen Merkmals an. z.B. farbe_index = 0 gibt die Farbe Rot an. (Unten ist eine vollstaendige Tabelle aller Festlegungen.)
+scaleFactor: Gibt die Groesse der Karte an.
+includeLabel: true oder false. Falls true, werden die Koordinaten der Karte (die die vier Merkmale angeben, z.b. (0,1,2,0)) unter der Karte geschrieben.
+
+FESTLEGUNG       0           1        2
+ANZAHL           1          2         3
+FORM            rechteck  raute     ellipse
+FUELLUNG        voll       halb      nicht
+FARBE           rot        grun      blau
+
+z.B. zeichnet drawCard((0,0),0,0,0,0) eine Karte mit einem rotem und voll schattierten Rechteck.
+
+*/
 
 unitsize(1cm);
 import patterns;
@@ -17,16 +34,10 @@ add("green_half",hatch(H=1mm,dir=E,p=green+.5mm));
 add("blue_full",hatch(H=1mm,dir=E,p=blue+1mm));
 add("blue_half",hatch(H=1mm,dir=E,p=blue+.5mm));
 
-//cards are 6x4, taller than wide. WARNING Changing the aspect ratio might make the cards look bad / symbols overlap
-real X_WIDTH = 4;
-real Y_HEIGHT = 6;
+//WARNING! Changing the aspect ratio might make the cards look bad / symbols overlap. 
+real X_WIDTH = 4;//width of card
+real Y_HEIGHT = 6;//height of card
 real EPSILON = 0.25;//radius of rounded corner
-
-//FESTLEGUNG       0           1        2
-//ANZAHL           1          2         3
-//FORM            rechteck  raute     ellipse
-//FUELLUNG        voll       halb      nicht
-//FARBE           rot        grun      blau
 
 //Draws the card with attributes anzahl_index, form_index, fuellung_index, farbe_index at (x,y) pair coords. (coords is untere linke Ecke)
 void drawCard(pair coords, int anzahl_index, int form_index, int fuellung_index, int farbe_index, real scaleFactor=1, bool includeLabel=false)
@@ -88,14 +99,8 @@ void drawCard(pair coords, int anzahl_index, int form_index, int fuellung_index,
 	return;
 }
 
-//FESTLEGUNG       0          1         2
-//ANZAHL           1          2         3
-//FORM            rechteck  raute     ellipse
-//FUELLUNG        voll       halb      nicht
-//FARBE           rot        grun      blau
-
-
 //This prints out all the cards. (For debugging purposes.)
+/*
 void printAll(){
 for(int i1=0; i1<3; ++i1){
 	for(int i2=0; i2<3; ++i2){
@@ -110,4 +115,5 @@ for(int i1=0; i1<3; ++i1){
 	}
 }
 return;}
+*/
 //printAll();
