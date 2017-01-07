@@ -11,11 +11,8 @@ Programming
 
 Busywork
 	- U_p Tabelle
-	- Deckblatt
-	- Pretty pictures library in Anhang
-	- fix Abbildung references
+	- Deckblatt (first draft done, needs revising)
 	- if you change "U_p untergruppen (Bruhat Zerlegung)" title in Rohfassung, change it in alle.gap
-	- N has 0 or 1? FESTLEGEN
 
 
 ----------------------
