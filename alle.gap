@@ -3,6 +3,8 @@
 
 # Sei k eine natuerliche Zahl. In diesem Programm wird die Anzahl von 'wesentlich verschiedenen' k-elementigen Teilmengen eines SET-Blattes bestimmt. Konkret wird die Anzahl von Bahnen von der Gruppe G = AGL(4,3) (die Gruppe von Symmetrien) auf Omega_k = P_k((F_3)^4) (alle k-elementigen Mengen von Karten) berechnet.
 
+# Die Listen listTypen, listAnzahlen und masterList sind in alle-daten.gap (auf https://github.com/the-set-of-sets/SET-BLL erhaeltlich). 
+
 ####################
 # 0. METHODE #######
 ####################
@@ -161,31 +163,121 @@ for w in W do#|W|=24
 			od;
 		od;
 	od;
-	count := count + 1;
-	Print(count," von 24");
 od;
 
-# Jetzt haben wir listTypen und listAnzahlen. Yay! :)
+# Jetzt haben wir listTypen und listAnzahlen.
 
 #######################################
 # 3. FIXPUNKTE VON ZYKELTYPEN BERECHNEN
 #######################################
+#Fuer alle k und fuer jede der 55 Zykeltypen wird berechnet, wie viele k-elementige Teilmengen von Omega von einem Gruppenelement mit dem bestimmten Zykeltyp fixiert werden. Die Herangehensweise wird in dem Beweis von Lemma 6 beschrieben.
 
 
+#Eingabe: struct (Ausgabe von CycleStructurePerm), numPoints (hier |Omega| = 81)
+#Ausgabe: struct (um einen Index verschoben, damit die Fixpunkte (1-Zyklen) mitgezaehlt werden)
+#z.B. changeStruct([2,1],81) = [74,2,1].
+changeStruct := function(struct,numPoints)
+	local l,sum,i;
+	l := [];
+	sum := 0;
+	for i in [1..Length(struct)] do
+		if IsBound(struct[i]) then
+			l[i+1] := struct[i];
+			sum := sum + (i+1)*struct[i];
+		fi;
+	od;
+	l[1] := numPoints - sum;
+	return l;
+end;
+
+#Eingabe: k, cstruct (CycleStructurePerm changed mit changeStruct)
+#Ausgabe: Liste von Listen, die die Form cstruct haben.
+#z.B. g hat den Zykeltyp (1^27, 9^3, 27^1). Falls k=28, sind die Moeglichkeiten [ [[1,1],[27,1]], [[1,1],[9,3]], [[1,10],[9,2]], [[1,19],[9,1]] ]. 
+partition := function(k,cstruct)
+	local possible, pos, things, thing;
+	possible := [];
+	if k=0 then
+		return [[]];
+	fi;
+	for pos in [1..k] do
+		if IsBound(cstruct[pos]) then
+			if cstruct[pos]>0 then
+				cstruct[pos] := cstruct[pos]-1;
+				things := partition(k-pos,cstruct);
+				cstruct[pos] := cstruct[pos]+1;
+				for thing in things do
+					if IsBound(thing[pos]) then
+						thing[pos] := thing[pos] + 1;
+					else
+						thing[pos] := 1;
+					fi;
+				od;
+				for thing in things do
+					if not thing in possible then
+						Add(possible, thing);
+					fi;
+				od;
+			fi;
+		fi;
+	od;
+	return possible;
+end;
+
+#Gegeben ist ein k in [0..81] (bzw. ..41 reicht) und ein g (genauer zu sein, einer der 55 Zykltypen, die ausgerechnet wurden und schon in listTypen stehen). Es wird mithilfe von partition() die Anzahl von k-Elementigen Teilmengen berechnet, die unter g festbleiben. 
+#Eingabe: k (Groesse der Teilmenge), gstruct (output von CycleStructurePerm)
+#Ausgabe: Anzahl der k-Elementigen Teilmengen, die von g fixiert werden.
+anzahlFixTeil := function(k,gstruct)
+	local cstruct, parts, sum,part,pos,prod;
+	cstruct := changeStruct(gstruct,Size(V));
+	parts := partition(k,cstruct);
+	sum := 0;
+	for part in parts do
+		prod := 1;
+		for pos in [1..Length(part)] do
+			if IsBound(part[pos]) then
+				prod := prod* Binomial(cstruct[pos],part[pos]);
+			fi;
+		od;
+		sum := sum + prod;
+	od;
+	return sum;
+end;
+
+k_MIN := 1;
+k_MAX := 41;
+
+#Eingabe: Nichts (von k_MIN, k_MAX abhaengig)
+#Ausgabe: masterList. An stelle k ist eine Liste mit 55 Eintraegen, die die Anzahl von k-elementigen Teilmengen angeben, die unter dem bestimmten Zykltyp (siehe typenList) festbleiben. 
+#Anmerkung: Mein Laptop braucht ca. 8 Stunden hierfuer. 
+computeAll := function()
+	local masterList,k,gstruct;
+	masterList := [];#an k-ter Stelle ist eine Liste mit 55 Elementen, die Anzahl fuer jedes Zykltyp (Reihenfolge gegeben durch die Reihenfolge in basis.gap
+	for k in [k_MIN..k_MAX] do
+		masterList[k] := [];
+		for gstruct in typenList do
+			Add(masterList[k],anzahlFixTeil(k,gstruct));
+		od;
+	od;
+	return masterList;
+end;
+
+masterList := computeAll();
 
 ################################################################
 # 4. ANZAHL DER BAHNEN BERECHNEN (ANWENDUNG DES BURNSIDE-LEMMAS)
 ################################################################
-# Nun koennen wir listTypen, listAnzahlen und masterTeilinvList verwenden und direkt in die Formel fuer das Burnside-Lemma eingeben. Die Liste BAHNEN_ALLE gibt an k-ter Stelle an, wie viele verschiedene Bahnen von G auf Omega_k existieren. 
+# Nun koennen wir listTypen, listAnzahlen und masterList verwenden und direkt in die Formel fuer das Burnside-Lemma eingeben. Die Liste BAHNEN_ALLE gibt an k-ter Stelle an, wie viele verschiedene Bahnen von G auf Omega_k existieren. 
 
 anzahlBahnen := function(k)
 	local anzahl, pos;
-	if k<0 or k>Length(masterTeilinvList) then return -1; fi;
+	if k<0 or k>Length(masterList) then return -1; fi;
 	anzahl := 0;
 	for pos in [1..Length(listTypen)] do
-		anzahl := anzahl + listAnzahlen[pos]*masterTeilinvList[k][pos];
+		anzahl := anzahl + listAnzahlen[pos]*masterList[k][pos];
 	od;
 	return anzahl/(Size(G)*Size(V));
 end;
 
-BAHNEN_ALLE := List([1..81],anzahlBahnen);
+BAHNEN_ALLE := List([1..40],anzahlBahnen);
+
+# Ausgabe war [ 1, 1, 2, 3, 6, 15, 34, 105, 384, 1658, 8135, 41407, 205211, 963708, 4231059, 17295730, 65807588, 233346408, 772518828, 2392611091, 6946116261, 18937468347, 48568206996, 117356752981, 267548687984, 576222904363, 1173737365919, 2263568972663, 4136780036942, 7170309576688, 11796184561289, 18431386920534, 27367649303603, 38636503940897, 51883126670392, 66294936428615, 80628826002618, 93359571424793, 102934827016066, 108081525023972 ]. 
