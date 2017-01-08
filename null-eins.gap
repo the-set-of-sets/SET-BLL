@@ -242,10 +242,10 @@ calcParticularReps := function(n,d,old)
 	for base in old do
 		#All possible points that can be added
 		last := base[Length(base)];
-		if last<=3^(d-1) then
+		if last<=3^(d-1) then#if base not full rank, next card to be added MUST be new Einheitsvektor 
 			tries := Set([3^(d-1)+1]);
 		else
-			tries := Set([(last+1)..(3^d)]);
+			tries := Set([(last+1)..(3^d)]);#else, must try all cards in dimension d
 		fi;
 		#Removing points that add sets
 		if n<> -1 then
