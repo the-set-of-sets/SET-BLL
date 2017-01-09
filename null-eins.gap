@@ -173,14 +173,14 @@ powersOfThree := List([1..MAX_DIM],i->3^i);
 isMinimal := function(d,worker,goal,dim,pos)
 	local i,try,new_pos;
 	if dim=0 then#First layer, use trans to give worker a 1
-		for i in [1..Length(worker)] do
+		for i in [1..Length(worker)] do#For each card in worker, try setting it to 1 and see if it makes it minimal (recursion)
 			try := OnSets(worker,trans[d][worker[i]]);
 			if isMinimal(d,try,goal,1,2)=false then
 				return false;
 			fi;
 		od;
 	else#1<= dim <= d
-		for i in [pos..Length(worker)] do
+		for i in [pos..Length(worker)] do#For each card in worker that hasn't been fixed, try setting it to
 			try := OnSets(worker,stab_gens[d][dim][worker[i]]);
 			if try < goal then
 				return false;
@@ -204,7 +204,7 @@ isMinimal := function(d,worker,goal,dim,pos)
 	return true;
 end;
 
-# Gibt an, ob der Vektor v mit Dimension d minimal ist. 
+# Gibt an, ob die Menge v mit Dimension d minimal ist. 
 isMin := function(d,v)
 	return isMinimal(d,v,v,0,1);
 end;
@@ -214,6 +214,7 @@ end;
 ############################
 
 
+#base ist eine Menge von Karten. In der Funktion calcParticularReps (unten) wollen wir eine Karte aus tries zu base hinzufuegen, ohne dass ein SET entsteht. badTries gibt alle Karten aus tries an, die dazu fuehren wuerden, dass ein SET in base entstehen wuerde. 
 badTries := function(base,tries)
 	local bad,t,i,found;
 	bad := Set([]);
@@ -292,8 +293,6 @@ calcReps := function(n)
 		reps[2][6] := [ vectorToNumber_menge([[0,0,0,0],[1,0,0,0],[2,0,0,0],[0,1,0,0],[1,1,0,0],[2,1,0,0]]*Z(3)^0) ];#parallel, 
 		reps[3] := [];
 		reps[3][6] := [ vectorToNumber_menge([[0,0,0,0],[1,0,0,0],[2,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,2,0]]*Z(3)^0) ];#windschief?
-		#[[0,0,0,0],[1,0,0,0],[2,0,0,0],[0,1,0,0],[0,2,0,0]] (schneiden sich) oder [[0,0,0,0],[1,0,0,0],[2,0,0,0],[0,1,0,0],[1,1,0,0],[2,1,0,0]] (parallel) oder [[0,0,0,0],[1,0,0,0],[2,0,0,0],[1,1,0,0],[1,1,1,0],[1,1,2,0]](schief?)
-		return reps;
 	elif n=-1 then#alle
 		reps[1] := [];
 		reps[1][1] := [];
